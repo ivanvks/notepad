@@ -1,32 +1,49 @@
 #include "mainwindow.h"
+#include "ui_mainwindow.h"
+
+constexpr int kColumnsCount = 3;
 
 MainWindow::MainWindow(QWidget *parent)
-    : QWidget(parent)
+    : QMainWindow(parent)
+    , ui_(new Ui::MainWindow)
+    , model_{0, 3}
 {
+    ui_->setupUi(this);
 
-    mainGrid = new QGridLayout(this);
+    selection_model_.setModel(&model_);
 
-    push_button_1 = new QPushButton(this);
-    
-    push_button_1->setText("Task 2");
-    
-    html_pars = new Html_pars(this);
-    html_pars->setWindowFlags(Qt::Window);
-    
-    mainGrid->addWidget(push_button_1, 1, 1, 1, 1);
-    
-    connect(push_button_1, SIGNAL(clicked()), this, SLOT(push_button_1_clicked()));
-    
-    this->setLayout(mainGrid);
+    ui_->tableView->setModel(&model_);
+    ui_->tableView->setSelectionModel(&selection_model_);
+    ui_->tableView->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    ui_->tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
 
-    }
+    model_.setHeaderData(0, Qt::Horizontal, "PC name");
+    model_.setHeaderData(1, Qt::Horizontal, "IP address");
+    model_.setHeaderData(2, Qt::Horizontal, "MAC address");
 
-void MainWindow::push_button_1_clicked()
-{
-    QMessageBox msgBox;
-    msgBox.setText("Task 2);
-    msgBox.exec();
-    html_pars->show();
+    model_.appendRow({new QStandardItem("PC1"), new QStandardItem("192.168.1.100"), new QStandardItem("F0:98:9D:00:00:00")});
+    model_.appendRow({new QStandardItem("PC2"), new QStandardItem("192.168.1.101"), new QStandardItem("F0:98:9D:00:00:01")});
+
+    connect(ui_->changeColorButton, &QPushButton::clicked, this, &MainWindow::onChangeColorButton);
+
+    setWindowTitle("Offce PC table");
 }
 
+MainWindow::~MainWindow()
+{
+    delete ui_;
+}
+
+void MainWindow::onChangeColorButton()
+{
+    if (selection_model_.hasSelection()) {
+        auto selected_rows = selection_model_.selectedRows();
+        for (const auto& index : selected_rows) {
+            for (int i = 0; i < kColumnsCount; ++i) {
+                auto item = model_.item(index.row(), i);
+                item->setData(QColor(Qt::green), Qt::BackgroundRole);
+            }
+        }
+    }
+}
 

@@ -1,27 +1,28 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
-#include <QtWidgets>
-#include <QtGui>
-#include <QPushButton>
-#include <QMessageBox>
 
-#include "htmlparser.h"
+#include <QMainWindow>
+#include <QStandardItemModel>
+#include <QItemSelectionModel>
 
-class MainWindow : public QWidget
+QT_BEGIN_NAMESPACE
+namespace Ui { class MainWindow; }
+QT_END_NAMESPACE
+
+class MainWindow : public QMainWindow
 {
     Q_OBJECT
+
 public:
     MainWindow(QWidget *parent = nullptr);
+    ~MainWindow();
+
+private slots:
+    void onChangeColorButton();
 
 private:
-    QGridLayout *mainGrid; 
-    QPushButton *push_button_1;
-    
-    Html_pars *html_pars;
-
- public slots:
-
-    void push_button_1_clicked();
-   
+    Ui::MainWindow *ui_;
+    QStandardItemModel model_;
+    QItemSelectionModel selection_model_;
 };
 #endif // MAINWINDOW_H
