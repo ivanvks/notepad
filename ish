@@ -1,0 +1,55 @@
+bool CSqlDatabase::openDataBase( const CSettings &sqlParam )
+{
+    qDebug() << "openDataBase" ;
+    /// Проверяем  в каких потоках выполяются подключение к БД и App
+    qDebug()<<QThread::currentThread()<<qApp->thread();
+    /// Инициализируем объект для работы с базой данных ASUV
+    mASUVDataBase_ = QSqlDatabase::addDatabase( "QPSQL", "asuv" );
+    /// Инициализируем объект для работы с базой данных POVZ
+    mPOVZDataBase_ = QSqlDatabase::addDatabase( "QPSQL", "povz" );
+    /// задаем хост базы данных ASUV
+    mASUVDataBase_.setHostName    ( sqlParam.asuvParam().value( "host" )         );
+    /// задаем порт базы данных ASUV
+    mASUVDataBase_.setPort        ( sqlParam.asuvParam().value( "port" ).toInt() );
+    /// задаем имя базы данных ASUV
+    mASUVDataBase_.setDatabaseName( sqlParam.asuvParam().value( "name" )         );
+    /// задаем имя пользователя ASUV
+    mASUVDataBase_.setUserName    ( sqlParam.asuvParam().value( "user" )         );
+    /// задаем пароль пользователя ASUV
+    mASUVDataBase_.setPassword    ( sqlParam.asuvParam().value( "pass" )         );
+    /// подключение к базе данных ASUV
+    qDebug() << "\n"; qDebug() <<  __PRETTY_FUNCTION__ << "[CHECK DATABASE ACCESS] =>"
+             << QString( "%1:%2 [%3]" ).arg( mASUVDataBase_.hostName(),
+                                          QString::number( mASUVDataBase_.port() ),
+                                          mASUVDataBase_.databaseName() );
+    if ( !mASUVDataBase_.open() ) {
+        qDebug() << __PRETTY_FUNCTION__ << "[ACCESS DENIED]";
+        qDebug() << __PRETTY_FUNCTION__ << mASUVDataBase_.lastError();
+    } else {
+        qDebug() << __PRETTY_FUNCTION__ << "[ACCESS ACCEPTED]";
+    }
+    /// Проверяем поддерживает ли драйвер базы данных механизм оповещений (EventNotifications)
+    driver = mASUVDataBase_.driver();
+    if (driver->hasFeature(QSqlDriver::EventNotifications)) {
+        /// Подписываемся на уведомления PostgreSQL
+        if (driver->subscribeToNotification("message_updated")) {
+            qDebug() << "Подписка на уведомление PostgreSQL 'message_updated' выполнена успешно";
+
+        } else {
+            qDebug() << "Не удалось подписаться на уведомление PostgreSQL 'message_updated'";
+        }      
+        
+    } else {
+        qDebug() << "Драйвер PostgreSQL не поддерживает уведомления";
+    }
+    /// Подключаем сигнал от базы данных о входящем сообщении  к слоту обработки уведомлений
+    QObject::connect(mASUVDataBase_.driver(),
+                     SIGNAL(notification(QString, QSqlDriver::NotificationSource, QVariant)),
+                     this, SLOT(NotificationS(QString, QSqlDriver::NotificationSource, QVariant)));
+      
+    emit statDbconnection(mASUVDataBase_.isOpen());
+    /// Сигнализируем о завершении работы метода
+    qDebug() << __PRETTY_FUNCTION__<<"End" <<QThread::currentThread();
+    /// Возвращаем статус подключения к БД
+    return mASUVDataBase_.isOpen() ;
+}

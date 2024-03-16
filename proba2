@@ -1,0 +1,65 @@
+QSocketNotifier: Invalid socket 38 and type 'Read', disabling...
+ВАЖНО:  закрытие подключения по команде администратора
+QSocketNotifier: Invalid socket 38 and type 'Read', disabling...
+
+void MyClass::checkSocket() {
+    int sock = ::socket(AF_INET, SOCK_STREAM, 0);
+    struct sockaddr_in serv_addr;
+    serv_addr.sin_family = AF_INET;
+    serv_addr.sin_port = htons(1234);
+    serv_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+    ::connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr));
+
+    m_socketNotifier = new QSocketNotifier(sock, QSocketNotifier::Read, this);
+    connect(m_socketNotifier, SIGNAL(activated(int)), this, SLOT(onSocketStateChanged(int))); 
+
+m_socketNotifier->activate(QSocketNotifier::AcceptError | QSocketNotiver::Read);
+}
+
+void MyClass::onSocketStateChanged(int state) {
+if (state == QSocketNotifier::Error) {
+qDebug() << "Ошибка в сокете: " << m_socketNotifier->error();
+} else if (state == QSocketNotifier::Readable) {
+// Здесь вы можете проверить соединение с PostgreSQL
+}
+}
+
+В этом примере создается новый сокет и QSocketNotifier следит за его состоянием. При изменении состояния сокета, вызывается слот onSocketStateChanged, в котором вы можете обработать эту ситуацию.
+
+Обратите внимание, что этот код не проверяет соединение с PostgreSQL, он только демонстрирует использование QSocketNotifier для мониторинга сокета. Для проверки соединения с PostgreSQL вам нужно использовать другие функции или библиотеки.
+
+
+
+mASUVDataBase_ = QSqlDatabase::addDatabase( "QPSQL", "asuv" );
+ mASUVDataBase_.setHostName    ( sqlParam.asuvParam().value( "host" )         );
+    /// задаем порт базы данных ASUV
+    mASUVDataBase_.setPort        ( sqlParam.asuvParam().value( "port" ).toInt() );
+    /// задаем имя базы данных ASUV
+    mASUVDataBase_.setDatabaseName( sqlParam.asuvParam().value( "name" )         );
+    /// задаем имя пользователя ASUV
+    mASUVDataBase_.setUserName    ( sqlParam.asuvParam().value( "user" )         );
+    /// задаем пароль пользователя ASUV
+    mASUVDataBase_.setPassword    ( sqlParam.asuvParam().value( "pass" )         );
+ if ( !mASUVDataBase_.open() ) {
+        qDebug() << __PRETTY_FUNCTION__ << "[ACCESS DENIED]";
+        qDebug() << __PRETTY_FUNCTION__ << mASUVDataBase_.lastError();
+    } else {
+        qDebug() << __PRETTY_FUNCTION__ << "[ACCESS ACCEPTED]";
+    }
+    /// Проверяем поддерживает ли драйвер базы данных механизм оповещений (EventNotifications)
+    driver = mASUVDataBase_.driver();
+    if (driver->hasFeature(QSqlDriver::EventNotifications)) {
+        /// Подписываемся на уведомления PostgreSQL
+        if (driver->subscribeToNotification("message_updated")) {
+            qDebug() << "Подписка на уведомление PostgreSQL 'message_updated' выполнена успешно";
+
+        } else {
+            qDebug() << "Не удалось подписаться на уведомление PostgreSQL 'message_updated'";
+        }
+} else {
+        qDebug() << "Драйвер PostgreSQL не поддерживает уведомления";
+    }
+    /// Подключаем сигнал от базы данных о входящем сообщении  к слоту обработки уведомлений
+    QObject::connect(mASUVDataBase_.driver(),
+                     SIGNAL(notification(QString, QSqlDriver::NotificationSource, QVariant)),
+                     this, SLOT(NotificationS(QString, QSqlDriver::NotificationSource, QVariant)));

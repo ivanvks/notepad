@@ -1,0 +1,29 @@
+ // QSocketNotifier::Type QSocketNotifier::type() const;
+  // qDebug() << __PRETTY_FUNCTION__<<"QSN" << QSocketNotifier::Type QSocketNotifier::type() const;
+   // QSocketNotifier notifier(sock, m_socketNotifier);
+  //  m_socketNotifier = QSocketNotifier(driver, some_params);
+   // bool conn = notifier.isEnabled();
+    //bool conn( QSocketNotifier::isEnabled() );
+    QSocketNotifier::eventFilter(
+//    socketNotifier.setEnabled(true);
+//    socketNotifier.errorOccurred.connect([](QSocketNotifier::SocketError error) {
+//        QString message = "QSocketNotifier Error: ";
+//        switch (error) {
+//        case QSocketNotifier::ReadError:
+//            message += "Read Error";
+//            break;
+//        case QSocketNotifier::WriteError:
+//            message += "Write Error";
+//            break;
+//        default:
+//            message += "Unknown Error";
+//        }
+//        qCritical(message);
+//    });
+   // connect(mASUVDataBase_.driver(), QOverload<QSocketDescriptor, QSocketNotifier::Type>::of(&QSocketNotifier::activated),
+          //  [=](QSocketDescriptor socket, QSocketNotifier::Read ){
+        //qDebug() << __PRETTY_FUNCTION__ << "[----РАЗРЫВ СОЕДИНЕНИЯ!!!----]"; });
+//    if(!conn){
+//        qDebug() << __PRETTY_FUNCTION__ << "[----РАЗРЫВ СОЕДИНЕНИЯ!!!----]";
+
+//    }
